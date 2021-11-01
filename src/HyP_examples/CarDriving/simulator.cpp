@@ -18,6 +18,7 @@ using namespace std;
 using namespace despot;
 //#define LINE_CASE
 #define CROSS_CASE
+#define STATIC
 
 WorldModel Simulator::worldModel;
 
@@ -185,8 +186,10 @@ void Simulator::modelStatesCB(const gazebo_msgs::ModelStatesConstPtr &msg)
 			ped.pos.y = msg->pose[i].position.y;
 
 			//Update ped goal??
-			// ped.goal = 0;
-			// ped.vel = 0;
+			#ifdef STATIC
+			ped.goal = 0;
+			ped.vel = 0;
+			#endif
 
 			//Update ped id
 			ped.id = model_id;
@@ -226,7 +229,10 @@ void Simulator::modelStatesCB(const gazebo_msgs::ModelStatesConstPtr &msg)
 
 	next_state.peds = new_peds;
 	next_state.num = new_peds.size();
-	// current_state = next_state;
+
+	#ifdef STATIC
+	current_state = next_state;
+	#endif
 }
 
 State* Simulator::GetCurrentState() const{
