@@ -28,26 +28,26 @@ double Path::mindist(COORD pos) {
 }
 
 int Path::forward(int i, double len) const {
-    auto& path = *this;
-    //while(len > 0 and i<path.size()-1) {
-        //double d = COORD::EuclideanDistance(path[i], path[i+1]);
-        //len -= d;
-		//i++;
-    //}
-    float step=(len / ModelParams::PATH_STEP);
+//     auto& path = *this;
+//     //while(len > 0 and i<path.size()-1) {
+//         //double d = COORD::EuclideanDistance(path[i], path[i+1]);
+//         //len -= d;
+// 		//i++;
+//     //}
+//     float step=(len / ModelParams::PATH_STEP);
 
-    if(step-(int)step>1.0-1e-5)
-    {
-        //cout<<"original step="<< step<<" new step"<<(int)(step+1)<<endl;
-    	step++;
-    }
-    i += (int)(step);
-//    i += int(len / ModelParams::PATH_STEP);
+//     if(step-(int)step>1.0-1e-5)
+//     {
+//         //cout<<"original step="<< step<<" new step"<<(int)(step+1)<<endl;
+//     	step++;
+//     }
+//     i += (int)(step);
+// //    i += int(len / ModelParams::PATH_STEP);
 
-    if(i > path.size()-1) {
-        i = path.size()-1;
-    }
-    return i;
+//     if(i > path.size()-1) {
+//         i = path.size()-1;
+//     }
+    return 2;
 }
 
 double Path::getYaw(int i) const {

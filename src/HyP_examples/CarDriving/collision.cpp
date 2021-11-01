@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -86,13 +87,18 @@ bool inCollision(double Mx, double My, double Hx, double Hy, double Nx, double N
 
 
  /// car geometry for pomdp car
-			double car_width = 1.2,
-						 car_length = 2.2;
-			double safe_margin = 0.3,
+			double car_width = 1.5,
+						 car_length = 1.8;
+			double safe_margin = 0.0,
 				 side_margin = car_width / 2.0 + safe_margin,
-				 front_margin = safe_margin,
-				 back_margin = car_length + safe_margin;
+				 front_margin = car_length / 2.0,
+				 back_margin = car_length / 2.0;
  /// end pomdp car
+
+	if(sqrt(pow(Mx - Hx, 2) + pow(My - Hy, 2)) < 1.0)
+		return true;
+
+	else return false;
 
 
 	return InRectangle(HNx, HNy, HMx, HMy, front_margin, back_margin, side_margin);

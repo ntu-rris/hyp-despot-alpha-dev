@@ -49,9 +49,9 @@ public:
 };
 
 struct CarStruct {
-	int pos;
-	double vel;
-	double dist_travelled;
+	int pos = 0;
+	double vel = 0;
+	double dist_travelled = 0;
 };
 
 class PomdpState : public State {
@@ -84,9 +84,9 @@ public:
 class PomdpStateWorld : public State {
 public:
 	CarStruct car;
-	int num;
-	PedStruct peds[ModelParams::N_PED_WORLD];
-	PomdpStateWorld() {}
+	int num = 0;
+	std::vector<PedStruct> peds;
+	PomdpStateWorld() {peds.resize(ModelParams::N_PED_WORLD);}
 
 	string text() const {
 		return concat(car.vel);

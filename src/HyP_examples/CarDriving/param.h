@@ -32,14 +32,14 @@ namespace ModelParams {
 
 	const double PATH_STEP = 0.05;
 
-	const double GOAL_TOLERANCE = 2;
+	const double GOAL_TOLERANCE = 0.5;
 
-	const double PED_SPEED = 1.2;
+	const double PED_SPEED = 0;
 
 	const bool debug=false;
 
 	const double control_freq=3;
-	const double AccSpeed=1;
+	const double AccSpeed=0.1;
 
 	extern std::string rosns;
 	extern std::string laser_frame;

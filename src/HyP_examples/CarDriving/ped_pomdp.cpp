@@ -649,6 +649,7 @@ void PedPomdp::PrintParticles(const vector<State*> particles, ostream& out) cons
 		for (int i = 0; i < world_model->goals.size(); i ++) {
 			cout << (goal_count[j][i] + 0.0) << " ";
 		}
+		cout << " vel is " << pomdp_state->peds[j].vel;
 		cout << endl;
 	}
 

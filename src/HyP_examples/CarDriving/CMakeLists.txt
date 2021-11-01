@@ -39,6 +39,11 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  gazebo_msgs
+  std_msgs
+  geometry_msgs
+  nav_msgs
+  gamma_simulator
 #  ${PROJECT_NAME}
 )
 

@@ -48,6 +48,13 @@ include_directories(
    include/
 )
 
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS roscpp
+#  DEPENDS other non-ROS libs
+)
+
 message("@@@@@@@@@@@@@@ before add lib @@@@@@@@@@@@@@")
 
 add_library(
@@ -138,6 +145,17 @@ add_library(
   #OPTIONS --compiler-options "-fPIC"
 )
 message("@@@@@@@@@@@@@@ after add lib @@@@@@@@@@@@@@")
+
+install(
+  TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 
 message("@@@@@@@@@@@@@@ end @@@@@@@@@@@@@@")

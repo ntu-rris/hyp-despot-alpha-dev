@@ -93,8 +93,8 @@ bool DrivingController::RunStep(Solver* solver, World* world, Logger* logger) {
 	double start_t = get_time_second();
 	driving_simulator_->UpdateWorld();
 	double end_t = get_time_second();
-	double world_update_time = (end_t - start_t);
-	logi << "[RunStep] Time spent in UpdateWorld(): " << world_update_time << endl;
+	// double world_update_time = (end_t - start_t);
+	// logi << "[RunStep] Time spent in UpdateWorld(): " << world_update_time << endl;
 
 	start_t = get_time_second();
 	solver->BeliefUpdate(action, obs);

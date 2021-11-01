@@ -44,9 +44,11 @@ void WorldModel::InitPedGoals(){
         };*/
 
         goals = {
-		   COORD(/*-2*/-20, 7.5),
-		   COORD(10, /*17*/27),
-		   COORD(-1,-1)
+		//    COORD(/*-2*/-20, 7.5),
+		//    COORD(10, /*17*/27),
+		//    COORD(-1,-1)
+        COORD(10, 0),
+        COORD(0, 10)
 		};
     }
     else{

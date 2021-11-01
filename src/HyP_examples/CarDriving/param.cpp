@@ -9,10 +9,10 @@ namespace ModelParams {
 	double NOISE_GOAL_ANGLE = 3.14*0.25; //use 0 for debugging
     double NOISE_PED_POS = 0.2; // 0.6;
     double COLLISION_DISTANCE = 1.5;
-	double IN_FRONT_ANGLE_DEG = 181;
+	double IN_FRONT_ANGLE_DEG = 120;
     int DRIVING_PLACE = 0;
     bool USE_ZERO_VEL_CORRECTION = true;
-	double VEL_MAX=1.5;
+	double VEL_MAX=1.0;
 
 	double LASER_RANGE = 8.0;
  
