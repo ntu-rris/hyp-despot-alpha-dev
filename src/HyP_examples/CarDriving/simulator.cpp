@@ -18,7 +18,7 @@ using namespace std;
 using namespace despot;
 //#define LINE_CASE
 #define CROSS_CASE
-#define STATIC
+// #define STATIC
 
 WorldModel Simulator::worldModel;
 
