@@ -31,7 +31,7 @@ set(DESPOT_BUILD_GPUS ON CACHE BOOL "Build GPU despot")
 # set(CMAKE_PREFIX_PATH "/opt/ros/noetic")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -mfpmath=sse")
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_30")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_75")
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")
 endif()
@@ -45,7 +45,7 @@ endif()
 set(
     CUDA_NVCC_FLAGS
     ${CUDA_NVCC_FLAGS};
-    -O3 -gencode arch=compute_30,code=sm_30
+    -O3 -gencode arch=compute_75,code=sm_75
     #-g -G
     )
 
