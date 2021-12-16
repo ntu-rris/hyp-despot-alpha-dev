@@ -63,6 +63,40 @@ struct Dvc_COORD
 
 };
 
+
+/* =============================================================================
+ * Dvc_COORD class
+ * =============================================================================*/
+/**
+ * Used in the Wheelchair example for storing lidar points. A 3D coordinate in Euclidean space.
+ */
+
+struct Dvc_3DCOORD
+{
+  double x, y, z;
+
+  DEVICE Dvc_3DCOORD();
+
+  DEVICE Dvc_3DCOORD(double _x, double _y, double _z);
+
+  DEVICE bool Valid();
+  DEVICE bool operator==(Dvc_COORD rhs);
+
+  DEVICE bool operator<(const Dvc_COORD& other);
+  DEVICE bool operator!=(Dvc_COORD rhs);
+
+  DEVICE void operator+=(Dvc_COORD offset);
+
+  DEVICE Dvc_COORD operator+(Dvc_COORD rhs);
+
+  DEVICE Dvc_COORD operator*(int mul);
+
+
+  DEVICE static double EuclideanDistance(Dvc_COORD lhs, Dvc_COORD rhs);
+  DEVICE static double ManhattanDistance(Dvc_COORD lhs, Dvc_COORD rhs);
+
+};
+
 /* =============================================================================
  * Dvc_Vector class
  * =============================================================================*/

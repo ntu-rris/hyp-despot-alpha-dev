@@ -70,6 +70,8 @@ DEVICE int DvcCoord::DirectionalDistance(DvcCoord lhs, DvcCoord rhs, int directi
 	}
 }
 
+
+
 DEVICE Dvc_COORD::Dvc_COORD() :x(0),y(0){}
 
  DEVICE Dvc_COORD::Dvc_COORD(double _x, double _y) : x(_x), y(_y) {}
@@ -113,6 +115,54 @@ DEVICE Dvc_COORD::Dvc_COORD() :x(0),y(0){}
  DEVICE double Dvc_COORD::ManhattanDistance(Dvc_COORD lhs, Dvc_COORD rhs)
  {
    return fabs(lhs.x - rhs.x) + fabs(lhs.y - rhs.y);
+ }
+
+
+ DEVICE Dvc_3DCOORD::Dvc_3DCOORD() :x(0),y(0),z(0){}
+
+ DEVICE Dvc_3DCOORD::Dvc_COORD(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
+
+ DEVICE bool Dvc_3DCOORD::Valid() {
+   return x >= 0 && y >= 0 && z >= 0;
+ }
+
+ DEVICE bool Dvc_3DCOORD::operator==(Dvc_3DCOORD rhs) {
+   return x == rhs.x && y == rhs.y && z == rhs.z;
+ }
+
+ DEVICE bool Dvc_3DCOORD::operator<(const Dvc_3DCOORD& other) {
+   return x < other.x || (x == other.x && y < other.y) || (x == other.x && y == other.y && z < other.z);
+ }
+
+ DEVICE bool Dvc_3DCOORD::operator!=(Dvc_3DCOORD rhs) {
+   return x != rhs.x || y != rhs.y || z != rhs.z;
+ }
+
+ DEVICE void Dvc_3DCOORD::operator+=(Dvc_3DCOORD offset) {
+   x += offset.x;
+   y += offset.y;
+   z += offset.z;
+ }
+
+ DEVICE Dvc_3DCOORD Dvc_3DCOORD::operator+(Dvc_3DCOORD rhs) {
+   return Dvc_COORD(x + rhs.x, y + rhs.y, z + rhs.z);
+ }
+
+ DEVICE Dvc_3DCOORD Dvc_3DCOORD::operator*(int mul)
+ {
+   return Dvc_COORD(x * mul, y * mul, z * mul);
+ }
+
+
+ DEVICE double Dvc_3DCOORD::EuclideanDistance(Dvc_3DCOORD lhs, Dvc_3DCOORD rhs)
+ {
+   return sqrt((lhs.x - rhs.x) * (lhs.x - rhs.x) +
+               (lhs.y - rhs.y) * (lhs.y - rhs.y) +
+			   (lhs.z - rhs.z) * (lhs.z - rhs.z));
+ }
+ DEVICE double Dvc_3DCOORD::ManhattanDistance(Dvc_3DCOORD lhs, Dvc_3DCOORD rhs)
+ {
+   return fabs(lhs.x - rhs.x) + fabs(lhs.y - rhs.y) + fabs(lhs.z - rhs.z);
  }
 
 
