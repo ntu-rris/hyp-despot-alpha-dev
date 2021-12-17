@@ -120,7 +120,7 @@ DEVICE Dvc_COORD::Dvc_COORD() :x(0),y(0){}
 
  DEVICE Dvc_3DCOORD::Dvc_3DCOORD() :x(0),y(0),z(0){}
 
- DEVICE Dvc_3DCOORD::Dvc_COORD(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
+ DEVICE Dvc_3DCOORD::Dvc_3DCOORD(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
 
  DEVICE bool Dvc_3DCOORD::Valid() {
    return x >= 0 && y >= 0 && z >= 0;
@@ -145,12 +145,12 @@ DEVICE Dvc_COORD::Dvc_COORD() :x(0),y(0){}
  }
 
  DEVICE Dvc_3DCOORD Dvc_3DCOORD::operator+(Dvc_3DCOORD rhs) {
-   return Dvc_COORD(x + rhs.x, y + rhs.y, z + rhs.z);
+   return Dvc_3DCOORD(x + rhs.x, y + rhs.y, z + rhs.z);
  }
 
  DEVICE Dvc_3DCOORD Dvc_3DCOORD::operator*(int mul)
  {
-   return Dvc_COORD(x * mul, y * mul, z * mul);
+   return Dvc_3DCOORD(x * mul, y * mul, z * mul);
  }
 
 

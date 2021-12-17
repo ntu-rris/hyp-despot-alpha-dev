@@ -80,20 +80,20 @@ struct Dvc_3DCOORD
   DEVICE Dvc_3DCOORD(double _x, double _y, double _z);
 
   DEVICE bool Valid();
-  DEVICE bool operator==(Dvc_COORD rhs);
+  DEVICE bool operator==(Dvc_3DCOORD rhs);
 
-  DEVICE bool operator<(const Dvc_COORD& other);
-  DEVICE bool operator!=(Dvc_COORD rhs);
+  DEVICE bool operator<(const Dvc_3DCOORD& other);
+  DEVICE bool operator!=(Dvc_3DCOORD rhs);
 
-  DEVICE void operator+=(Dvc_COORD offset);
+  DEVICE void operator+=(Dvc_3DCOORD offset);
 
-  DEVICE Dvc_COORD operator+(Dvc_COORD rhs);
+  DEVICE Dvc_3DCOORD operator+(Dvc_3DCOORD rhs);
 
-  DEVICE Dvc_COORD operator*(int mul);
+  DEVICE Dvc_3DCOORD operator*(int mul);
 
 
-  DEVICE static double EuclideanDistance(Dvc_COORD lhs, Dvc_COORD rhs);
-  DEVICE static double ManhattanDistance(Dvc_COORD lhs, Dvc_COORD rhs);
+  DEVICE static double EuclideanDistance(Dvc_3DCOORD lhs, Dvc_3DCOORD rhs);
+  DEVICE static double ManhattanDistance(Dvc_3DCOORD lhs, Dvc_3DCOORD rhs);
 
 };
 
