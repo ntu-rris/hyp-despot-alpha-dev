@@ -50,7 +50,7 @@ set(
     )
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
+  roscpp message_generation std_msgs geometry_msgs
 )
 
 #add_subdirectory(src/HypDespot/)
@@ -68,6 +68,28 @@ include_directories(
 
 FILE(GLOB LIBRVO_SRCS  src/RVO2/src/*.cpp)
 
+
+add_service_files(
+  FILES
+  ArmActionObs.srv
+  GetCurrentPose.srv
+  # Service2.srv
+)
+
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
 catkin_package(
   #INCLUDE_DIRS src/planner/
 #  LIBRARIES ped_path_predictor
