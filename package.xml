@@ -53,11 +53,13 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>cv_bridge</build_depend>
+  <build_depend>voronoi_msgs_and_types</build_depend>
 
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>voronoi_msgs_and_types</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
