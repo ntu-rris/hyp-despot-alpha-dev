@@ -416,6 +416,21 @@ public:
 		exit(1);
 	}
 
+	/* ========================================================================
+	 * Display
+	 * ========================================================================*/
+	/**
+	 * [Essential]
+	 * Prints a state.
+	 * @param state The state to be printed
+	 * @param out   The destination stream
+	 */
+	virtual void PrintGPUState(const Dvc_State* state, std::ostream& out = std::cout) const
+	{
+		std::cout << "Caution! Function " << __FUNCTION__ << " haven't been implemented" << std::endl;
+		exit(1);
+	}
+
 	
 };
 

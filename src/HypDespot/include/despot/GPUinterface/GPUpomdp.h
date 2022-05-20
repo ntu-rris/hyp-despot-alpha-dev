@@ -138,6 +138,7 @@ DEVICE extern Dvc_State* (*DvcModelGet_)(Dvc_State* , int );
 DEVICE extern Dvc_ValuedAction (*DvcModelGetBestAction_)();
 DEVICE extern float (*DvcModelGetMaxReward_)();
 DEVICE extern float (*DvcModelGetCarVel_)(Dvc_State* , int );
+DEVICE extern void (*DvcModelPrintDvcState_)(Dvc_State*);
 
 } // namespace despot
 

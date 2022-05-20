@@ -14,6 +14,7 @@ DEVICE Dvc_ValuedAction (*DvcModelGetBestAction_)()=NULL;
 DEVICE int (*DvcModelNumActions_)() = NULL;
 DEVICE float (*DvcModelGetMaxReward_)()=NULL;
 DEVICE float (*DvcModelGetCarVel_)(Dvc_State* , int)=NULL; //Specific to car driving
+DEVICE void (*DvcModelPrintDvcState_)(Dvc_State*)=NULL;//Useful for printing state inside the solver
 
 
 
