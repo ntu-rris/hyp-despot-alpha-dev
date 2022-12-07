@@ -1,6 +1,7 @@
 #include <despot/solver/DespotWithAlphaFunctionUpdate.h>
 #include <despot/util/logging.h>
 #include <map>
+#include "../../../HyP_examples/wheelchair_pomdp_GPU_version/include/wheelchair_pomdp/param.h"
 
 namespace despot {
     
@@ -144,12 +145,17 @@ bool DespotWithAlphaFunctionUpdate::PedPomdpProb = false;
             residual_obs_prob.resize(Globals::config.num_scenarios, 0);
             partitions[Globals::RESIDUAL_OBS].push_back(0);
         }*/
+		int depth_increment = 0;
+		if (qnode->edge() > ModelParams::num_normal_actions - 1)
+		{
+			depth_increment = ModelParams::num_simulation_m2g;
+		}
         VNode* residual_vnode;
         if(common_qnode->particles_.size() > 0)
         {
         	if (Globals::config.use_multi_thread_)
         			{
-        				residual_vnode = new Shared_VNode(parent->depth() + 1,
+        				residual_vnode = new Shared_VNode(parent->depth() + 1 + depth_increment,
         				                         static_cast<Shared_QNode*>(qnode), static_cast<Shared_QNode*>(common_qnode),
         				                         Globals::RESIDUAL_OBS);
         				if (Globals::config.exploration_mode == UCT)
@@ -157,7 +163,7 @@ bool DespotWithAlphaFunctionUpdate::PedPomdpProb = false;
         			}
         			else
         			{
-        				residual_vnode = new VNode(parent->depth() + 1,
+        				residual_vnode = new VNode(parent->depth() + 1 + depth_increment,
         						qnode,common_qnode, Globals::RESIDUAL_OBS);
         			}
                 children[Globals::RESIDUAL_OBS] = residual_vnode;
@@ -200,7 +206,7 @@ bool DespotWithAlphaFunctionUpdate::PedPomdpProb = false;
 		VNode* vnode;
 		if (Globals::config.use_multi_thread_)
 		        			{
-		        				vnode = new Shared_VNode(parent->depth() + 1,
+		        				vnode = new Shared_VNode(parent->depth() + 1 + depth_increment,
 		        				                         static_cast<Shared_QNode*>(qnode), static_cast<Shared_QNode*>(common_qnode),
 		        				                         obs);
 		        				if (Globals::config.exploration_mode == UCT)
@@ -208,7 +214,7 @@ bool DespotWithAlphaFunctionUpdate::PedPomdpProb = false;
 		        			}
 		        			else
 		        			{
-		        				vnode = new VNode(parent->depth() + 1,
+		        				vnode = new VNode(parent->depth() + 1 + depth_increment,
 		        							qnode, common_qnode, obs);
 		        			}
                 //vnode->observation_particle_size = observation_particle_size_;

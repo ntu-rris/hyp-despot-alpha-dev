@@ -3,6 +3,8 @@
 #include <iomanip>      // std::setprecision
 #include <despot/core/builtin_upper_bounds.h>
 #include <despot/solver/DespotWithAlphaFunctionUpdate.h>
+#include "../../../HyP_examples/wheelchair_pomdp_GPU_version/include/wheelchair_pomdp/param.h"
+// #include <despot/core/particle_belief.h>
 
 using namespace std;
 static double HitCount = 0;
@@ -957,11 +959,12 @@ ValuedAction DESPOT::Search() {
 			particles[i]->scenario_id = i;
 		}
 	}
-
-
+	// ParticleBelief *temp_particle_belief = new ParticleBelief(particles, model_, NULL, false);
+	// model_->PrintBelief(*temp_particle_belief);
 	root_ = ConstructTree(particles, streams, lower_bound_, upper_bound_,
 	                      model_, history_, Globals::config.time_per_move, &statistics_);
-	//root_->PrintTree();
+	// root_->PrintTree();
+	// root_->PrintPolicyTree();
 	logi << "[DESPOT::Search] Time for tree construction: "
 	     << (get_time_second() - start) << "s" << endl;
 	start = get_time_second();
@@ -1287,7 +1290,7 @@ ValuedAction DESPOT::OptimalAction(VNode* vnode) {
 	for (ACT_TYPE action = 0; action < vnode->children().size(); action++) {
 		QNode* qnode = vnode->Child(action);
 
-		logi << "Children of root node: action: " << qnode->edge() << "  lowerbound: "
+		cout << "Children of root node: action: " << qnode->edge() << "  lowerbound: "
 				     << qnode->lower_bound() << endl;
 
 
@@ -1815,6 +1818,12 @@ VNode* DESPOT::FindBlocker(VNode* vnode) {
 void DESPOT::Expand(VNode* vnode, ScenarioLowerBound* lower_bound,
                     ScenarioUpperBound* upper_bound, const DSPOMDP* model,
                     RandomStreams& streams, History& history) {
+	if (history.Size() > 0 && history.LastAction() > ModelParams::num_normal_actions - 1)	// if the last action was move_to_goal, skip the expansion of Vnode
+	{
+		std::cout << "Stop expanding Vnode..." << std::endl;
+		vnode->upper_bound(vnode->lower_bound());
+		return;
+	}
 	vector<QNode*>& children = vnode->children();
 	logd << "- Expanding vnode " << vnode << "with obs " << vnode->edge() << endl;
 
@@ -2002,6 +2011,11 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 	AveRewardTime += Globals::ElapsedTime(start);
 
 	start = Time::now();
+	int depth_increment = 0;
+	if (qnode->edge() > ModelParams::num_normal_actions - 1)
+	{
+		depth_increment = ModelParams::num_simulation_m2g;
+	}
 	// Create new belief nodes
 	for (map<OBS_TYPE, vector<State*> >::iterator it = partitions.begin();
 	        it != partitions.end(); it++) {
@@ -2012,14 +2026,14 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		if (Globals::config.use_multi_thread_)
 		{
 			vnode = new Shared_VNode(partitions[obs], partition_ID,
-			                         parent->depth() + 1, static_cast<Shared_QNode*>(qnode),
+			                         parent->depth() + 1 + depth_increment, static_cast<Shared_QNode*>(qnode),
 			                         obs);
 			if (Globals::config.exploration_mode == UCT)
 				static_cast<Shared_VNode*>(vnode)->visit_count_ = 1.1;
 		}
 		else
 			vnode = new VNode(partitions[obs], partition_ID,
-			                  parent->depth() + 1, qnode, obs);
+			                  parent->depth() + 1 + depth_increment, qnode, obs);
 		logd << " New node created!" << endl;
 		children[obs] = vnode;
 		auto start1 = Time::now();
@@ -2029,7 +2043,10 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		EnableDebugInfo(vnode, qnode);
 
 		InitBounds(vnode, lb, ub, streams, history);
-
+		if (qnode->edge() > ModelParams::num_normal_actions - 1)
+		{
+			vnode->upper_bound(vnode->lower_bound());
+		}
 		DisableDebugInfo();
 
 		history.RemoveLast();
