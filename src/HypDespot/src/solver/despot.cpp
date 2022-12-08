@@ -1818,7 +1818,8 @@ VNode* DESPOT::FindBlocker(VNode* vnode) {
 void DESPOT::Expand(VNode* vnode, ScenarioLowerBound* lower_bound,
                     ScenarioUpperBound* upper_bound, const DSPOMDP* model,
                     RandomStreams& streams, History& history) {
-	if (history.Size() > 0 && history.LastAction() > ModelParams::num_normal_actions - 1)	// if the last action was move_to_goal, skip the expansion of Vnode
+	//if (history.Size() > 0 && history.LastAction() > ModelParams::num_normal_actions - 1)	//History contains all the executed actions. So not a good check
+	if (vnode->parent() != NULL &&  vnode->parent()->edge() > ModelParams::num_normal_actions - 1)	// if the last action was move_to_goal, skip the expansion of Vnode
 	{
 		std::cout << "Stop expanding Vnode..." << std::endl;
 		vnode->upper_bound(vnode->lower_bound());
