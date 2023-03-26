@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include <string>
+#include <vector>
 
 namespace despot {
 
@@ -29,6 +30,9 @@ struct Config {
 	double exploration_constant_o;
         bool track_alpha_vector;
         bool use_sawtooth_upper_bound;
+
+	std::vector<float> action_values;
+
 
 	Config() :
 		search_depth(90),

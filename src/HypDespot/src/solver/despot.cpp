@@ -890,6 +890,7 @@ ValuedAction DESPOT::Search() {
 			model_->PrintParticles(particles);
 		}
 	}
+	model_->PrintParticles(particles);
 	statistics_ = Shared_SearchStatistics();
 
 	start = get_time_second();
@@ -1293,7 +1294,7 @@ ValuedAction DESPOT::OptimalAction(VNode* vnode) {
 		cout << "Children of root node: action: " << qnode->edge() << "  lowerbound: "
 				     << qnode->lower_bound() << endl;
 
-
+		Globals::config.action_values[action] = qnode->lower_bound();
 		if (qnode->lower_bound() > astar.value) {
 			astar = ValuedAction(action, qnode->lower_bound());
 			best_qnode = qnode;		//Debug
