@@ -146,10 +146,10 @@ bool DespotWithAlphaFunctionUpdate::PedPomdpProb = false;
             partitions[Globals::RESIDUAL_OBS].push_back(0);
         }*/
 		int depth_increment = 0;
-		if (qnode->edge() > ModelParams::num_normal_actions - 1)
-		{
-			depth_increment = ModelParams::num_simulation_m2g;
-		}
+		// if (qnode->edge() > ModelParams::num_normal_actions - 1)
+		// {
+		// 	depth_increment = ModelParams::num_simulation_m2g;
+		// }
         VNode* residual_vnode;
         if(common_qnode->particles_.size() > 0)
         {

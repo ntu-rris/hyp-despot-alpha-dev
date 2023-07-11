@@ -1820,12 +1820,12 @@ void DESPOT::Expand(VNode* vnode, ScenarioLowerBound* lower_bound,
                     ScenarioUpperBound* upper_bound, const DSPOMDP* model,
                     RandomStreams& streams, History& history) {
 	//if (history.Size() > 0 && history.LastAction() > ModelParams::num_normal_actions - 1)	//History contains all the executed actions. So not a good check
-	if (vnode->parent() != NULL &&  vnode->parent()->edge() > ModelParams::num_normal_actions - 1)	// if the last action was move_to_goal, skip the expansion of Vnode
-	{
-		std::cout << "Stop expanding Vnode..." << std::endl;
-		vnode->upper_bound(vnode->lower_bound());
-		return;
-	}
+	// if (vnode->parent() != NULL &&  vnode->parent()->edge() > ModelParams::num_normal_actions - 1)	// if the last action was move_to_goal, skip the expansion of Vnode
+	// {
+	// 	std::cout << "Stop expanding Vnode..." << std::endl;
+	// 	vnode->upper_bound(vnode->lower_bound());
+	// 	return;
+	// }
 	vector<QNode*>& children = vnode->children();
 	logd << "- Expanding vnode " << vnode << "with obs " << vnode->edge() << endl;
 
@@ -2014,10 +2014,10 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 
 	start = Time::now();
 	int depth_increment = 0;
-	if (qnode->edge() > ModelParams::num_normal_actions - 1)
-	{
-		depth_increment = ModelParams::num_simulation_m2g;
-	}
+	// if (qnode->edge() > ModelParams::num_normal_actions - 1)
+	// {
+	// 	depth_increment = ModelParams::num_simulation_m2g;
+	// }
 	// Create new belief nodes
 	for (map<OBS_TYPE, vector<State*> >::iterator it = partitions.begin();
 	        it != partitions.end(); it++) {
@@ -2045,10 +2045,10 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		EnableDebugInfo(vnode, qnode);
 
 		InitBounds(vnode, lb, ub, streams, history);
-		if (qnode->edge() > ModelParams::num_normal_actions - 1)
-		{
-			vnode->upper_bound(vnode->lower_bound());
-		}
+		// if (qnode->edge() > ModelParams::num_normal_actions - 1)
+		// {
+		// 	vnode->upper_bound(vnode->lower_bound());
+		// }
 		DisableDebugInfo();
 
 		history.RemoveLast();
