@@ -144,6 +144,8 @@ void Global_print_GPUuse(std::thread::id threadIdx);
 void Global_print_message(std::thread::id threadIdx, char* msg);
 void Global_print_value(std::thread::id threadIdx, double value, char* msg);
 
+extern std::mutex global_mutex;
+
 }//namespace Globals
 
 } // namespace despot

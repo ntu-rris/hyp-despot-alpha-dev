@@ -62,7 +62,9 @@ set(
     ${CUDA_NVCC_FLAGS};
     -O3 -gencode arch=compute_75,code=sm_75
     #-g -G
-    -diag-suppress 2464 -diag-suppress 68 -diag-suppress 20012
+    -diag-suppress 2464 
+    -diag-suppress 68 
+    -diag-suppress 20012
     )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -97,8 +99,8 @@ add_subdirectory(src/HypDespot/)
 # add_subdirectory(src/HyP_examples/tag)
 # add_subdirectory(src/HyP_examples/adventurer)
 # add_subdirectory(src/HyP_examples/CarDriving)
-# add_subdirectory(src/HyP_examples/wheelchair_pomdp_GPU_version)
-add_subdirectory(src/HyP_examples/ma_rock_sample)
+add_subdirectory(src/HyP_examples/wheelchair_pomdp_GPU_version)
+# add_subdirectory(src/HyP_examples/ma_rock_sample)
 # add_subdirectory(src/HyP_examples/unkown_navigation)
 
 set_target_properties( "${PROJECT_NAME}"

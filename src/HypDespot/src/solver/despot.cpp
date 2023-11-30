@@ -2,6 +2,7 @@
 #include <despot/solver/pomcp.h>
 #include <iomanip>      // std::setprecision
 #include <despot/core/builtin_upper_bounds.h>
+#include <despot/GPUcore/thread_globals.h>
 
 using namespace std;
 static double HitCount = 0;

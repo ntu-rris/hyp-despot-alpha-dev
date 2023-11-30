@@ -456,26 +456,7 @@ template <class _T1, class _T2> struct is_convertible
     static const size_t __complete_check2 = __is_convertible_check<_T2>::__v;
 };
 
-// is_function
 
-namespace __is_function_imp
-{
-template <class _Tp> char  __test(_Tp*);
-template <class _Tp> __two __test(...);
-template <class _Tp> _Tp&  __source();
-}
-
-template <class _Tp, bool = is_class<_Tp>::value ||
-                            is_union<_Tp>::value ||
-                            is_void<_Tp>::value  ||
-                            is_reference<_Tp>::value >
-struct __is_function
-    : public integral_constant<bool, sizeof(__is_function_imp::__test<_Tp>(__is_function_imp::__source<_Tp>())) == 1>
-    {};
-template <class _Tp> struct __is_function<_Tp, true> : public false_type {};
-
-template <class _Tp> struct is_function
-    : public __is_function<_Tp> {};
 
 // is_member_function_pointer
 
