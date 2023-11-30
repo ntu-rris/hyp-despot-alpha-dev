@@ -1,10 +1,25 @@
 cmake_minimum_required(VERSION 3.8)
 message("@@@@@@@@@@@@@@ GPUmodel cmake list @@@@@@@@@@@@@@")
 
-set(CUDA_SDK_ROOT_DIR "/usr/local/cuda/samples")
+# set(CUDA_SDK_ROOT_DIR "/usr/local/cuda/samples")
+# set(CUDA_SDK_ROOT_DIR "/usr/local/cuda-12.3/bin/nvcc")
+# set(CUDA_SDK_ROOT_DIR "/usr/local/cuda/bin/nvcc")
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda")
+# set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda/bin/nvcc")
 
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+
+
+if(NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES})
+  set(CMAKE_CUDA_ARCHITECTURES 75)
+endif()
+message(STATUS "CUDA architectures set to ${CMAKE_CUDA_ARCHITECTURES}")
 
 project(hyp_despot CXX CUDA)
+
+# set(CMAKE_CUDA_ARCHITECTURES "native")
+
+# set(CMAKE_CUDA_ARCHITECTURES 86)
 
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
@@ -47,6 +62,7 @@ set(
     ${CUDA_NVCC_FLAGS};
     -O3 -gencode arch=compute_75,code=sm_75
     #-g -G
+    -diag-suppress 2464 -diag-suppress 68 -diag-suppress 20012
     )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -80,9 +96,9 @@ add_subdirectory(src/HypDespot/)
 # add_subdirectory(src/HyP_examples/tiger)
 # add_subdirectory(src/HyP_examples/tag)
 # add_subdirectory(src/HyP_examples/adventurer)
-#add_subdirectory(src/HyP_examples/CarDriving)
-add_subdirectory(src/HyP_examples/wheelchair_pomdp_GPU_version)
-# add_subdirectory(src/HyP_examples/ma_rock_sample)
+# add_subdirectory(src/HyP_examples/CarDriving)
+# add_subdirectory(src/HyP_examples/wheelchair_pomdp_GPU_version)
+add_subdirectory(src/HyP_examples/ma_rock_sample)
 # add_subdirectory(src/HyP_examples/unkown_navigation)
 
 set_target_properties( "${PROJECT_NAME}"

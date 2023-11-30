@@ -2,9 +2,6 @@
 #include <despot/solver/pomcp.h>
 #include <iomanip>      // std::setprecision
 #include <despot/core/builtin_upper_bounds.h>
-#include <despot/solver/DespotWithAlphaFunctionUpdate.h>
-#include "../../../HyP_examples/wheelchair_pomdp_GPU_version/include/wheelchair_pomdp/param.h"
-// #include <despot/core/particle_belief.h>
 
 using namespace std;
 static double HitCount = 0;
@@ -92,11 +89,7 @@ VNode* DESPOT::Trial(VNode* root, RandomStreams& streams,
 		}
 
 		double start1 = clock();
-                if(!Globals::config.track_alpha_vector)
-                {
-                    ExploitBlockers(cur);
-                }
-		//ExploitBlockers(cur);
+		ExploitBlockers(cur);
 		BlockerCheckTime += double(clock() - start1) / CLOCKS_PER_SEC;
 
 		if (Gap(cur) == 0) {
@@ -106,7 +99,7 @@ VNode* DESPOT::Trial(VNode* root, RandomStreams& streams,
 		if (cur->IsLeaf()) {
 			double start = clock();
 			Expand(cur, lower_bound, upper_bound, model, streams, history);
-			//root->PrintTree();
+
 			if (statistics != NULL) {
 				statistics->time_node_expansion += (double) (clock() - start)
 				                                   / CLOCKS_PER_SEC;
@@ -190,11 +183,7 @@ Shared_VNode* DESPOT::Trial(Shared_VNode* root, RandomStreams& streams,
 			statistics->Update_longest_trial_len(cur->depth());
 		}
 		auto start1 = Time::now();
-		if(!Globals::config.track_alpha_vector)
-			{
-				ExploitBlockers(cur);
-			}
-		//ExploitBlockers(cur);
+		ExploitBlockers(cur);
 
 		BlockerCheckTime += Globals::ElapsedTime(start1);
 
@@ -229,8 +218,8 @@ Shared_VNode* DESPOT::Trial(Shared_VNode* root, RandomStreams& streams,
 		Shared_QNode* qstar;
 		Shared_VNode* next;
 		try {
-			lock_guard < mutex > lck(cur->GetMutex());
-			if (!((VNode*)cur)->IsLeaf()) {
+			//lock_guard < mutex > lck(cur->GetMutex());
+			if (!cur->IsLeaf()) {
 				qstar = SelectBestUpperBoundNode(cur);
 				//Globals::Global_print_down(this_thread::get_id(), qstar, ((VNode*)cur)->depth()+1);
 				if (qstar)
@@ -510,39 +499,10 @@ VNode* DESPOT::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 	logd
 	        << "[DESPOT::ConstructTree] START - Initializing lower and upper bounds at the root node.";
 	if (use_GPU_)
-	{
-		if(Globals::config.track_alpha_vector)
-			{
-				QNode* common_parent = root->common_parent();
-				if(common_parent->default_move.value_array == NULL)
-				{
-					//This should always be called as root node's common parent bounds are not updated
-					GPU_InitBounds(root, lower_bound, upper_bound, model, streams, history);
-				}
-
-
-				InitBounds(root, lower_bound, upper_bound, streams, history);
-
-			}
-		else
-		{
-			GPU_InitBounds(root, lower_bound, upper_bound, model, streams, history);
-		}
-	}
+		GPU_InitBounds(root, lower_bound, upper_bound, model, streams, history);
 	else
-	{
 		InitBounds(root, lower_bound, upper_bound, streams, history);
-	}
-	if(Globals::config.track_alpha_vector)
-	  {
-	    logd << " Root node's bounds: (" << root->lower_bound() << root->lower_bound_alpha_vector<< ", "
-		 << root->upper_bound() << root->common_parent()->default_upper_bound_alpha_vector << ")" << std::endl;
-	  }
-	else
-	  {
-	    logd << " Root node's bounds: (" << root->lower_bound() << ", "
-		 << root->upper_bound() << ")" << endl;
-	  }
+
 	Initial_root_gap = Gap(root);
 	logd
 	        << "[DESPOT::ConstructTree] END - Initializing lower and upper bounds at the root node.";
@@ -554,10 +514,7 @@ VNode* DESPOT::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 		if (FIX_SCENARIO == 1)
 			cout << "Root bounds: (" << statistics->initial_lb << "," << statistics->initial_ub << ")" << endl;
 	}
-	if(Globals::config.default_action == "PLB")
-	{
-		return root;
-	}
+
 	int num_trials = 0;
 
 	used_time = Globals::ElapsedTime();
@@ -622,18 +579,14 @@ VNode* DESPOT::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 	} else {
 
 		do {
-		  //if (statistics->num_expanded_nodes > 10000)
-		  //		break;
-			//std::cout << "Starting trial ####################################" << num_trials << std::endl;
-			//root->PrintTree();
+			if (statistics->num_expanded_nodes > 10000)
+				break;
 			double start = clock();
 			VNode* cur = Trial(root, streams, lower_bound, upper_bound, model,
 			                   history, statistics);
 			used_time += double(clock() - start) / CLOCKS_PER_SEC;
 			explore_time += double(clock() - start) / CLOCKS_PER_SEC;
 			//model->Debug();
-			//root->PrintTree();
-			//std::cout << "Backing up" << std::endl;
 			start = clock();
 			Backup(cur, true);
 			if (statistics != NULL) {
@@ -643,7 +596,6 @@ VNode* DESPOT::ConstructTree(vector<State*>& particles, RandomStreams& streams,
 			used_time += double(clock() - start) / CLOCKS_PER_SEC;
 			backup_time += double(clock() - start) / CLOCKS_PER_SEC;
 			//model->Debug();
-			//root->PrintTree();
 			num_trials++;
 			Globals::AddSerialTime(used_time);
 
@@ -712,91 +664,22 @@ void DESPOT::InitLowerBound(VNode* vnode, ScenarioLowerBound* lower_bound,
 	streams.position(vnode->depth());
 	/*if(vnode->depth()==89)
 		cout<<"Reach depth 89!"<<endl;*/
-        if(Globals::config.track_alpha_vector)
-        {
-            QNode* common_parent = vnode->common_parent();
-                if(common_parent->default_move.value_array == NULL)
-                {
-                    common_parent->default_lower_bound_alpha_vector.resize(Globals::config.num_scenarios, 0); 
-                    common_parent->default_move = lower_bound->Value(vnode->particles(), streams, history, common_parent->default_lower_bound_alpha_vector);
-                    for(int i = 0; i < Globals::config.num_scenarios; i++)
-                    {
-                        common_parent->default_lower_bound_alpha_vector[i] = common_parent->default_lower_bound_alpha_vector[i] * Globals::Discount(vnode->depth());
-                    }
-                    common_parent->default_move.value_array = (&(common_parent->default_lower_bound_alpha_vector));
-                   
-                   // vnode->default_move(vnode->lower_bound_alpha_vector);
-                }
-            
-                vnode->lower_bound_alpha_vector = common_parent->default_move;
-                        
-            vnode->lower_bound_alpha_vector.value = vnode->calculate_lower_bound();
-        }
-        else
-        {
-             vnode->lower_bound_alpha_vector = lower_bound->Value(vnode->particles(), streams, history);
-            vnode->lower_bound_alpha_vector.value *= Globals::Discount(vnode->depth());
-            
-	}
-        vnode->default_move(vnode->lower_bound_alpha_vector);
-	vnode->lower_bound(vnode->lower_bound_alpha_vector.value);
-	
-        //ValuedAction move = lower_bound->Value(vnode->particles(), streams,
-	//                                       history);
-	//move.value *= Globals::Discount(vnode->depth());
-	//vnode->default_move(move);
+	ValuedAction move = lower_bound->Value(vnode->particles(), streams,
+	                                       history);
+	move.value *= Globals::Discount(vnode->depth());
+	vnode->default_move(move);
 	//cout<<"vnode at depth "<<vnode->depth()<<", default move value="<< move.value
 	//	<<" weight="<< vnode->Weight()<< endl;//Debug
-	//vnode->lower_bound(move.value);
+	vnode->lower_bound(move.value);
 }
 
 void DESPOT::InitUpperBound(VNode* vnode, ScenarioUpperBound* upper_bound,
                             RandomStreams& streams, History& history) {
 	streams.position(vnode->depth());
-        double upper;
-        if(Globals::config.track_alpha_vector)
-        {
-            QNode* common_parent = vnode->common_parent();
-                if(common_parent->default_upper_bound_alpha_vector.size() == 0)
-                {
-                   common_parent->default_upper_bound_alpha_vector.resize(Globals::config.num_scenarios, 0);   
-            upper_bound->Value(vnode->particles(), streams, history, common_parent->default_upper_bound_alpha_vector); 
-             for(int i = 0; i < Globals::config.num_scenarios; i++)
-                {
-                    common_parent->default_upper_bound_alpha_vector[i] = common_parent->default_upper_bound_alpha_vector[i] * Globals::Discount(vnode->depth());
-                }
-                if(Globals::config.use_sawtooth_upper_bound)
-                {
-                    common_parent->vnode_upper_bound_per_particle = common_parent->default_upper_bound_alpha_vector;
-                    //common_parent->qnode_upper_bound_per_particle = common_parent->default_upper_bound_alpha_vector;
-                }
-                //vnode->upper_bound_alpha_vector.value_array = (&(common_parent->default_upper_bound_alpha_vector));
-                
-                }
-                //vnode->upper_bound_alpha_vector.value_array = (&(common_parent->default_upper_bound_alpha_vector));
-            
-            
-            upper = vnode->calculate_upper_bound();
-            
-            //vnode->upper_bound_alpha_vector.value = upper;
-            if(Globals::config.use_sawtooth_upper_bound)
-            {
-                vnode->belief_mult_es = upper;
-            }
-            
-            
-        }
-        else
-        {
-            upper = upper_bound->Value(vnode->particles(), streams, history);
-            vnode->utility_upper_bound(upper * Globals::Discount(vnode->depth()));
-            upper = upper * Globals::Discount(vnode->depth()) - Globals::config.pruning_constant;
-            
-        }
-	//double upper = upper_bound->Value(vnode->particles(), streams, history);
-	//vnode->utility_upper_bound(upper * Globals::Discount(vnode->depth()));
-	//upper = upper * Globals::Discount(vnode->depth())
-	//        - Globals::config.pruning_constant;
+	double upper = upper_bound->Value(vnode->particles(), streams, history);
+	vnode->utility_upper_bound(upper * Globals::Discount(vnode->depth()));
+	upper = upper * Globals::Discount(vnode->depth())
+	        - Globals::config.pruning_constant;
 	vnode->upper_bound(upper);
 }
 
@@ -811,7 +694,6 @@ void DESPOT::InitBounds(VNode* vnode, ScenarioLowerBound* lower_bound,
 	        // close gap because no more search can be done on leaf node
 	        || vnode->depth() == Globals::config.search_depth - 1) {
 		vnode->upper_bound(vnode->lower_bound());
-                //vnode->upper_bound_alpha_vector = vnode->lower_bound_alpha_vector;
 	}
 }
 
@@ -837,7 +719,10 @@ ValuedAction DESPOT::Search() {
 		ifstream fin;
 		string particle_file = "Particles" + std::to_string(step_counter) + ".txt";
 		fin.open(particle_file, std::ios::in);
-		assert(fin.is_open());
+		if(!fin.is_open()){
+			cerr << "Unable to open particle file " << particle_file << endl;
+			exit(1);
+		}
 		particles.resize(Globals::config.num_scenarios);
 		model_->ImportStateList(particles, fin);
 		fin.close();
@@ -884,13 +769,12 @@ ValuedAction DESPOT::Search() {
 	}
 
 	if (Debug_mode)
-		model_->PrintParticles(particles);
+		;//model_->PrintParticles(particles);
 	else{
 		if (Globals::config.silence != true) {
 			model_->PrintParticles(particles);
 		}
 	}
-	model_->PrintParticles(particles);
 	statistics_ = Shared_SearchStatistics();
 
 	start = get_time_second();
@@ -960,12 +844,10 @@ ValuedAction DESPOT::Search() {
 			particles[i]->scenario_id = i;
 		}
 	}
-	// ParticleBelief *temp_particle_belief = new ParticleBelief(particles, model_, NULL, false);
-	// model_->PrintBelief(*temp_particle_belief);
+
+
 	root_ = ConstructTree(particles, streams, lower_bound_, upper_bound_,
 	                      model_, history_, Globals::config.time_per_move, &statistics_);
-	// root_->PrintTree();
-	// root_->PrintPolicyTree();
 	logi << "[DESPOT::Search] Time for tree construction: "
 	     << (get_time_second() - start) << "s" << endl;
 	start = get_time_second();
@@ -981,13 +863,7 @@ ValuedAction DESPOT::Search() {
 	start = get_time_second();
 	ValuedAction astar = OptimalAction(root_);
 
-	//int ii;
-	//std::cout << "Before deleting root" << std::endl;
-	//std::cin >> ii;
 	delete root_;
-	//std::cout << "After deleting root" << std::endl;
-	//std::cin >> ii;
-	
 
 
 	logi << "[DESPOT::Search] Time for deleting tree: "
@@ -1291,10 +1167,10 @@ ValuedAction DESPOT::OptimalAction(VNode* vnode) {
 	for (ACT_TYPE action = 0; action < vnode->children().size(); action++) {
 		QNode* qnode = vnode->Child(action);
 
-		cout << "Children of root node: action: " << qnode->edge() << "  lowerbound: "
+		logi << "Children of root node: action: " << qnode->edge() << "  lowerbound: "
 				     << qnode->lower_bound() << endl;
 
-		Globals::config.action_values[action] = qnode->lower_bound();
+
 		if (qnode->lower_bound() > astar.value) {
 			astar = ValuedAction(action, qnode->lower_bound());
 			best_qnode = qnode;		//Debug
@@ -1349,12 +1225,7 @@ double DESPOT::WEU(VNode* vnode, double xi) {
 		root = root->parent()->parent();
 	}
 
-	double prob_o_given_b = 1.0;
-	if(Globals::config.track_alpha_vector)
-	{
-		prob_o_given_b = vnode->prob_o_given_b;
-	}
-	return prob_o_given_b*(Gap(vnode) - xi * vnode->Weight() * Gap(root));
+	return Gap(vnode) - xi * vnode->Weight() * Gap(root);
 }
 
 double DESPOT::WEU(Shared_VNode* vnode, double xi) {
@@ -1366,12 +1237,7 @@ double DESPOT::WEU(Shared_VNode* vnode, double xi) {
 	//cout <<"vnode->Weight()="<<vnode->Weight()<<endl;
 	//cout <<"Gap(root)="<<Gap(root)<<endl;
 	//return Gap((VNode*) vnode) - xi * vnode->Weight() * Gap(root);
-	double prob_o_given_b = 1.0;
-	if(Globals::config.track_alpha_vector)
-	{
-		prob_o_given_b = vnode->prob_o_given_b;
-	}
-	return prob_o_given_b*(Gap(vnode, true) - xi * vnode->Weight() * Gap(root));
+	return Gap(vnode, true) - xi * vnode->Weight() * Gap(root);
 }
 
 VNode* DESPOT::SelectBestWEUNode(QNode* qnode) {
@@ -1383,18 +1249,11 @@ VNode* DESPOT::SelectBestWEUNode(QNode* qnode) {
 		VNode* vnode = it->second;
 
 		double weu;
-		double  true_weu;
 		if (Globals::config.use_multi_thread_)
-		{
 			weu = WEU(static_cast<Shared_VNode*>(vnode));
-			true_weu = WEU(vnode);
-		}
 		else
-		{
 			weu = WEU(vnode);
-			true_weu = weu;
-		}
-		if ((weu >= weustar) && (true_weu > 0)){ //Don't choose a node with zero weu
+		if (weu >= weustar) {
 			weustar = weu;
 			vstar = vnode->vstar;
 		}
@@ -1665,16 +1524,9 @@ void DESPOT::Backup(VNode* vnode, bool real) {
 		logd << " Iter " << iter << " " << vnode << endl;
 		string msg = "backup to VNode";
 		msg += real ? "(true)" : "(blocker)";
-		int vnode_updated = 0;
 		if (Globals::config.use_multi_thread_) {
-			if(Globals::config.track_alpha_vector)
-			{
-				vnode_updated = DespotWithAlphaFunctionUpdate::Update(static_cast<Shared_VNode*>(vnode), real);
-			}
-			else
-			{
-				DESPOT::Update(static_cast<Shared_VNode*>(vnode), real);
-			}
+			Update(static_cast<Shared_VNode*>(vnode), real);
+
 			if (real)
 				Globals::Global_print_node(this_thread::get_id(), vnode,
 				   static_cast<Shared_VNode*>(vnode)->depth(), 0,
@@ -1688,15 +1540,7 @@ void DESPOT::Backup(VNode* vnode, bool real) {
 				   msg.c_str());
 		} else
 		{
-			//Update(vnode, real);
-                    if(Globals::config.track_alpha_vector)
-                    {
-                        vnode_updated = DespotWithAlphaFunctionUpdate::Update(vnode);
-                    }
-                    else
-                    {
-                        DESPOT::Update(vnode,real);
-                    }
+			Update(vnode, real);
 			if(FIX_SCENARIO==1){
 				cout.precision(4);
 				cout<<"thread "<<0<<" "<<msg<<" get old node "<<vnode
@@ -1718,24 +1562,7 @@ void DESPOT::Backup(VNode* vnode, bool real) {
 		msg = "backup to QNode";
 		msg += real ? "(true)" : "(blocker)";
 		if (Globals::config.use_multi_thread_) {
-			if(Globals::config.track_alpha_vector)
-			{
-			map<OBS_TYPE, VNode*>& children = parentq->children();
-					for (map<OBS_TYPE, VNode*>::iterator it = children.begin();
-				it != children.end(); it++) {
-						//std::cout << "Observation " << "Sibling " << it->first << " Own " << vnode->edge() << std::endl;
-						if(it->first != vnode->edge())
-						{
-							//std::cout << "Updating sibling" << std::endl;
-						  DespotWithAlphaFunctionUpdate::UpdateSibling(static_cast<Shared_VNode*>(vnode), static_cast<Shared_VNode*>(it->second), real, vnode_updated);
-						}
-					}
-				DespotWithAlphaFunctionUpdate::Update(static_cast<Shared_QNode*>(parentq), real, vnode_updated);
-			}
-			else
-			{
-				DESPOT::Update(static_cast<Shared_QNode*>(parentq), real);
-			}
+			Update(static_cast<Shared_QNode*>(parentq), real);
 			if (real)
 				Globals::Global_print_node<int>(this_thread::get_id(), parentq,
 				                                static_cast<Shared_VNode*>(vnode)->depth(),
@@ -1750,27 +1577,7 @@ void DESPOT::Backup(VNode* vnode, bool real) {
 				                                msg.c_str());
 		} else
 		{
-                    
-                        if(Globals::config.track_alpha_vector)
-                        {
-                            //UPDATE siblings
-                            map<OBS_TYPE, VNode*>& children = parentq->children();
-                            for (map<OBS_TYPE, VNode*>::iterator it = children.begin();
-                        it != children.end(); it++) {
-                                //std::cout << "Observation " << "Sibling " << it->first << " Own " << vnode->edge() << std::endl;
-                                if(it->first != vnode->edge())
-                                {
-                                    //std::cout << "Updating sibling" << std::endl;
-                                    DespotWithAlphaFunctionUpdate::UpdateSibling(vnode, it->second, vnode_updated);
-                                }
-                            }
-                            DespotWithAlphaFunctionUpdate::Update(parentq, vnode_updated);
-                        }
-                        else
-                        {
-                            DESPOT::Update(parentq,real); 
-                        }
-			//Update(parentq, real);
+			Update(parentq, real);
 			if(FIX_SCENARIO==1)
 			{
 				cout.precision(4);
@@ -1819,45 +1626,21 @@ VNode* DESPOT::FindBlocker(VNode* vnode) {
 void DESPOT::Expand(VNode* vnode, ScenarioLowerBound* lower_bound,
                     ScenarioUpperBound* upper_bound, const DSPOMDP* model,
                     RandomStreams& streams, History& history) {
-	//if (history.Size() > 0 && history.LastAction() > ModelParams::num_normal_actions - 1)	//History contains all the executed actions. So not a good check
-	// if (vnode->parent() != NULL &&  vnode->parent()->edge() > ModelParams::num_normal_actions - 1)	// if the last action was move_to_goal, skip the expansion of Vnode
-	// {
-	// 	std::cout << "Stop expanding Vnode..." << std::endl;
-	// 	vnode->upper_bound(vnode->lower_bound());
-	// 	return;
-	// }
 	vector<QNode*>& children = vnode->children();
-	logd << "- Expanding vnode " << vnode << "with obs " << vnode->edge() << endl;
+	logd << "- Expanding vnode " << vnode << endl;
 
 	if (use_GPU_ && !vnode->PassGPUThreshold())
 	{
-		if(Globals::config.track_alpha_vector)
-		{
-			if(Globals::config.use_multi_thread_)
-				{
-					(static_cast<Shared_QNode*>(vnode->common_parent_))->lock();
-				}
-		}
 		const vector<State*>& particles = vnode->particles();
 		if (particles[0] == NULL) // switching point
 		{
-			if(!Globals::config.track_alpha_vector)
-			{
-				GPU_UpdateParticles(vnode, lower_bound, upper_bound, model, streams,
+			GPU_UpdateParticles(vnode, lower_bound, upper_bound, model, streams,
 			                    history);
-			}
 			vnode->ReadBackCPUParticles(model);
 
 			if (Globals::MapThread(this_thread::get_id()) == 0) {
 				logd << " Read-back GPU particle at depth " << vnode->depth() << ": " << endl; //Debugging
 			}
-		}
-		if(Globals::config.track_alpha_vector)
-		{
-			if(Globals::config.use_multi_thread_)
-				{
-					(static_cast<Shared_QNode*>(vnode->common_parent_))->unlock();
-				}
 		}
 
 		Globals::AddExpanded();
@@ -1870,50 +1653,27 @@ void DESPOT::Expand(VNode* vnode, ScenarioLowerBound* lower_bound,
 
 		//Create new Q-nodes for each action
 		QNode* qnode;
-		if(children.size() <=action) //children can be precreated in GPU despot with alpha vector update
-		{
-			if (Globals::config.use_multi_thread_)
-				qnode = new Shared_QNode(static_cast<Shared_VNode*>(vnode), action);
-			else
-				qnode = new QNode(vnode, action);
 
-			children.push_back(qnode);
-		}
+		if (Globals::config.use_multi_thread_)
+			qnode = new Shared_QNode(static_cast<Shared_VNode*>(vnode), action);
 		else
-		{
-			qnode = vnode->Child(action);
-		}
+			qnode = new QNode(vnode, action);
+
+		children.push_back(qnode);
 		if (use_GPU_ && vnode->PassGPUThreshold())
-		{
-			if(Globals::config.track_alpha_vector)
-					{
-						DespotWithAlphaFunctionUpdate::Expand(qnode,lower_bound,upper_bound,model,streams,history);
-					}
-		}
+			;
 		else
 		{
 			if (Globals::config.use_multi_thread_ && Globals::config.exploration_mode == UCT)
 				static_cast<Shared_QNode*>(qnode)->visit_count_ = 1.1;
-                        if(Globals::config.track_alpha_vector)
-                        {
-                            DespotWithAlphaFunctionUpdate::Expand(qnode,lower_bound,upper_bound,model,streams,history);
-                        }
-                        else
-                        {
-                            Expand(qnode, lower_bound, upper_bound, model, streams, history);
-                        }
+			Expand(qnode, lower_bound, upper_bound, model, streams, history);
 		}
 
 	}
 
 	if (use_GPU_ && vnode->PassGPUThreshold())
-	{
-		if(!Globals::config.track_alpha_vector)
-		{
-			GPU_Expand_Action(vnode, lower_bound, upper_bound, model, streams,
+		GPU_Expand_Action(vnode, lower_bound, upper_bound, model, streams,
 		                  history);
-		}
-	}
 	else {
 
 
@@ -2000,10 +1760,12 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 	bool doPrint = DESPOT::Print_nodes;
 
 	if (FIX_SCENARIO == 1 || doPrint) {
+		Globals::global_mutex.lock();
 		cout.precision(10);
 		if (qnode->edge() == 0) cout << endl;
 		cout << "step reward (d= " << parent->depth() + 1 << " ): "
 		     << step_reward / parent->Weight() << endl;
+		Globals::global_mutex.unlock();
 	}
 
 	double lower_bound = step_reward;
@@ -2013,11 +1775,6 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 	AveRewardTime += Globals::ElapsedTime(start);
 
 	start = Time::now();
-	int depth_increment = 0;
-	// if (qnode->edge() > ModelParams::num_normal_actions - 1)
-	// {
-	// 	depth_increment = ModelParams::num_simulation_m2g;
-	// }
 	// Create new belief nodes
 	for (map<OBS_TYPE, vector<State*> >::iterator it = partitions.begin();
 	        it != partitions.end(); it++) {
@@ -2028,14 +1785,14 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		if (Globals::config.use_multi_thread_)
 		{
 			vnode = new Shared_VNode(partitions[obs], partition_ID,
-			                         parent->depth() + 1 + depth_increment, static_cast<Shared_QNode*>(qnode),
+			                         parent->depth() + 1, static_cast<Shared_QNode*>(qnode),
 			                         obs);
 			if (Globals::config.exploration_mode == UCT)
 				static_cast<Shared_VNode*>(vnode)->visit_count_ = 1.1;
 		}
 		else
 			vnode = new VNode(partitions[obs], partition_ID,
-			                  parent->depth() + 1 + depth_increment, qnode, obs);
+			                  parent->depth() + 1, qnode, obs);
 		logd << " New node created!" << endl;
 		children[obs] = vnode;
 		auto start1 = Time::now();
@@ -2045,10 +1802,7 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		EnableDebugInfo(vnode, qnode);
 
 		InitBounds(vnode, lb, ub, streams, history);
-		// if (qnode->edge() > ModelParams::num_normal_actions - 1)
-		// {
-		// 	vnode->upper_bound(vnode->lower_bound());
-		// }
+
 		DisableDebugInfo();
 
 		history.RemoveLast();
@@ -2056,6 +1810,7 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		     << vnode->upper_bound() << ")" << endl;
 
 		if (FIX_SCENARIO == 1 || doPrint) {
+			Globals::global_mutex.lock();
 			cout.precision(10);
 			cout << " [CPU Vnode] New node's bounds: (d= " << vnode->depth()
 			     << " ,obs=" << obs << " ,lb= "
@@ -2072,6 +1827,7 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 			for (int i=0; i<vnode->particles().size();i++)
 				cout<< vnode->particles()[i]->scenario_id<<" ";
 			cout<<endl;
+			Globals::global_mutex.unlock();
 		}
 
 		lower_bound += vnode->lower_bound();
@@ -2089,6 +1845,7 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 	qnode->Weight();
 	qnode->default_value = lower_bound; // for debugging
 	if (FIX_SCENARIO == 1 || doPrint) {
+		Globals::global_mutex.lock();
 		cout.precision(10);
 		cout << " [CPU Qnode] New qnode's bounds: (d= " << parent->depth() + 1
 		     << " ,action=" << qnode->edge() << ", lb= "
@@ -2096,6 +1853,7 @@ void DESPOT::Expand(QNode* qnode, ScenarioLowerBound* lb,
 		     << qnode->upper_bound() / qnode->Weight() << " ,uub= "
 		     << qnode->utility_upper_bound() / qnode->Weight()
 		     << " ,weight= " << qnode->Weight() << " )" << endl;
+		Globals::global_mutex.unlock();
 	}
 
 	TotalExpansionTime += Globals::ElapsedTime(totalstart);
